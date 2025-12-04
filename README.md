@@ -17,6 +17,10 @@ This project showcases how to integrate with **multiple external vendors** (Paym
 
 ## 🏗️ Architecture
 
+![Vendor System Architecture](architecture.png)
+
+### High-Level Flow
+
 ```
 Order API → Kafka → Vendor Orchestrator → External Vendors (HTTP)
                                               ↓
