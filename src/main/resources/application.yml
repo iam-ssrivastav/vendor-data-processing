@@ -1,0 +1,147 @@
+spring:
+  application:
+    name: vendor-data-processing
+  
+  kafka:
+    bootstrap-servers: localhost:19092
+    consumer:
+      group-id: vendor-processing-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  
+  datasource:
+    url: jdbc:h2:mem:vendordb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+server:
+  port: 8080
+
+# Vendor API Configuration
+vendors:
+  payment:
+    base-url: http://localhost:8080/mock-vendor/payment-api
+    api-key: ${PAYMENT_VENDOR_API_KEY:test-payment-key-123}
+    timeout-ms: 5000
+    webhook-secret: ${PAYMENT_WEBHOOK_SECRET:payment-webhook-secret}
+  
+  shipping:
+    base-url: http://localhost:8080/mock-vendor/shipping-api
+    api-key: ${SHIPPING_VENDOR_API_KEY:test-shipping-key-456}
+    timeout-ms: 3000
+  
+  tax:
+    base-url: http://localhost:8080/mock-vendor/tax-api
+    api-key: ${TAX_VENDOR_API_KEY:test-tax-key-789}
+    timeout-ms: 2000
+  
+  fraud:
+    base-url: http://localhost:8080/mock-vendor/fraud-api
+    api-key: ${FRAUD_VENDOR_API_KEY:test-fraud-key-000}
+    timeout-ms: 4000
+    webhook-secret: ${FRAUD_WEBHOOK_SECRET:fraud-webhook-secret}
+
+# Resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      paymentVendor:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - java.net.ConnectException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.reactive.function.client.WebClientRequestException
+      
+      shippingVendor:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 2
+      
+      taxVendor:
+        slidingWindowSize: 10
+        failureRateThreshold: 60
+        waitDurationInOpenState: 5s
+      
+      fraudVendor:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 8s
+  
+  retry:
+    instances:
+      paymentVendor:
+        maxAttempts: 3
+        waitDuration: 1s
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - java.net.ConnectException
+          - java.util.concurrent.TimeoutException
+      
+      shippingVendor:
+        maxAttempts: 2
+        waitDuration: 500ms
+        exponentialBackoffMultiplier: 1.5
+      
+      taxVendor:
+        maxAttempts: 2
+        waitDuration: 500ms
+      
+      fraudVendor:
+        maxAttempts: 3
+        waitDuration: 1s
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus,circuitbreakers,circuitbreakerevents
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Logging
+logging:
+  level:
+    com.enterprise.vendor: DEBUG
+    org.springframework.kafka: INFO
+    org.springframework.web.reactive: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Swagger/OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method

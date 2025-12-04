@@ -1,0 +1,334 @@
+{
+    "info": {
+        "_postman_id": "b8a6c8e1-5f2d-4b3a-9c1e-7d8f9a0b1c2d",
+        "name": "Vendor Data Processing System",
+        "description": "Collection for Vendor Data Processing System including Order Management, Webhooks, and Mock Vendor APIs.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Orders",
+            "item": [
+                {
+                    "name": "Create Order",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"customerId\": \"CUST-001\",\n    \"productId\": \"LAPTOP-PRO\",\n    \"quantity\": 1,\n    \"amount\": 1999.99,\n    \"shippingAddress\": {\n        \"street\": \"123 Main St\",\n        \"city\": \"New York\",\n        \"state\": \"NY\",\n        \"zipCode\": \"10001\",\n        \"country\": \"USA\"\n    }\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8080/api/orders",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8080",
+                            "path": [
+                                "api",
+                                "orders"
+                            ]
+                        },
+                        "description": "Creates a new order which triggers the async vendor processing flow."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Order by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8080/api/orders/1",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8080",
+                            "path": [
+                                "api",
+                                "orders",
+                                "1"
+                            ]
+                        },
+                        "description": "Retrieves the current status of an order."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Webhooks (Internal)",
+            "item": [
+                {
+                    "name": "Payment Webhook",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-Webhook-Secret",
+                                "value": "payment-webhook-secret"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"orderId\": 1,\n    \"status\": \"SUCCESS\",\n    \"transactionId\": \"tx_123456789\",\n    \"message\": \"Payment processed successfully\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8080/webhooks/payment",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8080",
+                            "path": [
+                                "webhooks",
+                                "payment"
+                            ]
+                        },
+                        "description": "Simulates a callback from the Payment Vendor."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Fraud Webhook",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-Webhook-Secret",
+                                "value": "fraud-webhook-secret"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"orderId\": 1,\n    \"status\": \"PASSED\",\n    \"score\": 0.1,\n    \"reason\": \"Low risk\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8080/webhooks/fraud",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8080",
+                            "path": [
+                                "webhooks",
+                                "fraud"
+                            ]
+                        },
+                        "description": "Simulates a callback from the Fraud Vendor."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Mock Vendors (Simulation)",
+            "item": [
+                {
+                    "name": "Mock Payment Charge",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"orderId\": 1,\n    \"amount\": 1999.99,\n    \"currency\": \"USD\",\n    \"paymentMethod\": \"CREDIT_CARD\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8080/mock-vendor/payment-api/charge",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8080",
+                            "path": [
+                                "mock-vendor",
+                                "payment-api",
+                                "charge"
+                            ]
+                        },
+                        "description": "Direct call to the mock payment vendor."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Mock Shipping Rates",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"orderId\": 1,\n    \"address\": {\n        \"street\": \"123 Main St\",\n        \"city\": \"New York\",\n        \"state\": \"NY\",\n        \"zipCode\": \"10001\",\n        \"country\": \"USA\"\n    },\n    \"weight\": 2.5\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8080/mock-vendor/shipping-api/rates",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8080",
+                            "path": [
+                                "mock-vendor",
+                                "shipping-api",
+                                "rates"
+                            ]
+                        },
+                        "description": "Direct call to the mock shipping vendor."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Mock Tax Calculate",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"amount\": 1999.99,\n    \"address\": {\n        \"state\": \"NY\"\n    }\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8080/mock-vendor/tax-api/calculate",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8080",
+                            "path": [
+                                "mock-vendor",
+                                "tax-api",
+                                "calculate"
+                            ]
+                        },
+                        "description": "Direct call to the mock tax vendor."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Mock Fraud Check",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"orderId\": 1,\n    \"customerId\": \"CUST-001\",\n    \"amount\": 1999.99,\n    \"ipAddress\": \"127.0.0.1\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8080/mock-vendor/fraud-api/check",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8080",
+                            "path": [
+                                "mock-vendor",
+                                "fraud-api",
+                                "check"
+                            ]
+                        },
+                        "description": "Direct call to the mock fraud vendor."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Actuator & Health",
+            "item": [
+                {
+                    "name": "Health Check",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8080/actuator/health",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8080",
+                            "path": [
+                                "actuator",
+                                "health"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Circuit Breakers",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8080/actuator/circuitbreakers",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8080",
+                            "path": [
+                                "actuator",
+                                "circuitbreakers"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Prometheus Metrics",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8080/actuator/prometheus",
+                            "protocol": "http",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "8080",
+                            "path": [
+                                "actuator",
+                                "prometheus"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ]
+}
